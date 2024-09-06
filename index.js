@@ -26,11 +26,18 @@ async function run() {
 
     const coffeeCollection = client.db("coffeeDB").collection("coffee");
 
-    app.get("/coffee", async(req,res) =>{
-        const cursor = coffeeCollection.find()
-        const result = await cursor.toArray()
-        res.send(result)
-    })
+    app.get("/coffee", async (req, res) => {
+      const cursor = coffeeCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get("/coffee/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coffeeCollection.findOne(query);
+      res.send(result);
+    });
 
     app.post("/coffee", async (req, res) => {
       const coffee = req.body;
@@ -38,11 +45,31 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/coffee/:id', async(req,res) =>{
+    app.delete("/coffee/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coffeeCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.put("/coffee/:id", async(req,res) =>{
         const id = req.params.id
-        const query = { _id : new ObjectId(id)};
-        const result = await coffeeCollection.deleteOne(query);
-        res.send(result)
+        const coffee = req.body
+        const filter = { _id : new ObjectId(id) };
+        const options = { upsert: true };
+        const updateCoffee = {
+            $set: {
+                chef: coffee.chef,
+                name : coffee.name,
+                supplier : coffee.supplier,
+                taste :coffee.taste,
+                category: coffee.category,
+                details: coffee.details,
+                url: coffee.url,
+            },
+          };
+          const result = await coffeeCollection.updateOne(filter, updateCoffee, options);
+          res.send(result)
     })
 
     // Send a ping to confirm a successful connection
