@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
 
     const coffeeCollection = client.db("coffeeDB").collection("coffee");
+    const userCollection = client.db("coffeeDB").collection("user");
 
     app.get("/coffee", async (req, res) => {
       const cursor = coffeeCollection.find();
@@ -52,25 +53,42 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/coffee/:id", async(req,res) =>{
-        const id = req.params.id
-        const coffee = req.body
-        const filter = { _id : new ObjectId(id) };
-        const options = { upsert: true };
-        const updateCoffee = {
-            $set: {
-                chef: coffee.chef,
-                name : coffee.name,
-                supplier : coffee.supplier,
-                taste :coffee.taste,
-                category: coffee.category,
-                details: coffee.details,
-                url: coffee.url,
-            },
-          };
-          const result = await coffeeCollection.updateOne(filter, updateCoffee, options);
-          res.send(result)
-    })
+    app.put("/coffee/:id", async (req, res) => {
+      const id = req.params.id;
+      const coffee = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateCoffee = {
+        $set: {
+          chef: coffee.chef,
+          name: coffee.name,
+          supplier: coffee.supplier,
+          taste: coffee.taste,
+          category: coffee.category,
+          details: coffee.details,
+          url: coffee.url,
+        },
+      };
+      const result = await coffeeCollection.updateOne(
+        filter,
+        updateCoffee,
+        options
+      );
+      res.send(result);
+    });
+
+    // user data
+    app.get("/user", async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
